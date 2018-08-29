@@ -52,6 +52,6 @@ func void Ninja_ManaReg_MergeLeGoFlags(var int flags) {
  */
 func void Ninja_ManaReg_Init() {
     // This function is useful to ensure correct LeGo initialization without breaking the mod
-    Ninja_ManaReg_MergeLeGoFlags(Ninja_ManaReg_LeGo_Flags);
+    Ninja_ManaReg_MergeLeGoFlags(NINJA_MANAREG_LEGO_FLAGS);
     ManaReg_Init(0);
 };

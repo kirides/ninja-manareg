@@ -24,14 +24,14 @@ Talents.d
 Random.d
 AI_Function.d
 Interface.d
-__View_Ninja_GFA.d
+__View_Ninja_ManaReg.d
 Cursor.d
 Bloodsplats.d
 Buffs.d
 Trialoge.d
 Names.d
 Bars.d
-__Buttons_Ninja_GFA.d
+__Buttons_Ninja_ManaReg.d
 Dialoggestures.d
 Focusnames.d
 Gamestate.d
