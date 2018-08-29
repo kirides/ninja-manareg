@@ -1,7 +1,9 @@
 # Verwendete Bibliotheken
 
 - Ikarus 1.2
-- LeGo 2.5.0
+- LeGo 2.5.0  
+  * For compatibility with LeGo 2.4, some functions are not included  
+  (ViewPtr_AddText, View_AddText, View_AddTextColored, Button_SetCaption)
 
 
 # Build Anleitung
