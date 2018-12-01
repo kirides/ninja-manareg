@@ -1,8 +1,9 @@
-const string NINJA_MANAREG_VERSION = "ManaReg 1.2.0";
+const string NINJA_MANAREG_VERSION = "ManaReg 1.2.1";
 
 const string NINJA_MANAREG_INI = "NINJA_MANAREG";
 const string NINJA_MANAREG_INI_THRESHOLD = "THRESHOLD";
 const string NINJA_MANAREG_INI_DIVISOR = "DIVISOR";
+const string NINJA_MANAREG_INI_TICKRATE = "TICKRATE";
 
 const int DEFAULT_NINJA_MANAREG_MANA_THRESHOLD = 50;
 const int DEFAULT_NINJA_MANAREG_MAX_MANA_DIVISOR = 50;
@@ -10,6 +11,7 @@ const int DEFAULT_NINJA_MANAREG_TICKRATE = 2000;
 
 var int Ninja_ManaReg_Mana_Threshold;
 var int Ninja_ManaReg_Max_Mana_Divisor;
+var int Ninja_ManaReg_TickRate;
 
 func void Ninja_ManaReg_Regeneration() {
     // Not during loading
@@ -18,9 +20,9 @@ func void Ninja_ManaReg_Regeneration() {
     if (!MEM_Game.timestep) { return; };
     // Only in a certain interval
     var int delayTimer; delayTimer += MEM_Timer.frameTime;
-    if (delayTimer < DEFAULT_NINJA_MANAREG_TICKRATE) { return; };
+    if (delayTimer < Ninja_ManaReg_TickRate) { return; };
 	
-    delayTimer -= DEFAULT_NINJA_MANAREG_TICKRATE;
+    delayTimer -= Ninja_ManaReg_TickRate;
     
     if (hero.attribute[ATR_MANA_MAX] >= Ninja_ManaReg_Mana_Threshold) {
         if (hero.attribute[ATR_MANA] < hero.attribute[ATR_MANA_MAX]) {
@@ -33,9 +35,11 @@ func void Ninja_ManaReg_Regeneration() {
 func void Ninja_ManaReg_ApplyINI() {
 	var string ini_threshold; ini_threshold = MEM_GetGothOpt(NINJA_MANAREG_INI, NINJA_MANAREG_INI_THRESHOLD);
 	var string ini_divisor; ini_divisor = MEM_GetGothOpt(NINJA_MANAREG_INI, NINJA_MANAREG_INI_DIVISOR);
+	var string ini_tickrate; ini_tickrate = MEM_GetGothOpt(NINJA_MANAREG_INI, NINJA_MANAREG_INI_TICKRATE);
 
 	Ninja_ManaReg_Mana_Threshold = DEFAULT_NINJA_MANAREG_MANA_THRESHOLD;
 	Ninja_ManaReg_Max_Mana_Divisor = DEFAULT_NINJA_MANAREG_MAX_MANA_DIVISOR;
+	Ninja_ManaReg_TickRate = DEFAULT_NINJA_MANAREG_TICKRATE;
 	
 	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": THRESHOLD FROM INI = "), ini_threshold));
 	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": DIVISOR FROM INI = "), ini_divisor));
@@ -46,6 +50,10 @@ func void Ninja_ManaReg_ApplyINI() {
 	
 	if (!Hlp_StrCmp(ini_divisor, "")) {
 		Ninja_ManaReg_Max_Mana_Divisor = STR_ToInt(ini_divisor);
+	};
+	
+	if (!Hlp_StrCmp(ini_tickrate, "")) {
+		Ninja_ManaReg_TickRate = STR_ToInt(ini_tickrate);
 	};
 };
 

@@ -28,6 +28,7 @@ trägt man folgendes (z.B. ans Ende) in die System\Gothic.ini ein:
 [NINJA_MANAREG]
 THRESHOLD=50
 DIVISOR=20
+TICKRATE=2000
 ```
 
 ## Erklärung
@@ -35,4 +36,6 @@ DIVISOR=20
 `THRESHOLD`: Der "Maximales Mana"-Wert, den der Held benötigt, damit die Manaregeneration freigeschaltet wird. (Standard: 50)  
 `DIVISOR`: Der Wert mithilfe dessen, die Regenerationsrate bestimmt wird. (Standard: 50)
 - Berechnung: Regenerationsrate = (Maximales Mana + (DIVISOR / 2)) / DIVISOR
+
+`TICKRATE`: Häufigkeit der Regeneration in Millisekunden
 
