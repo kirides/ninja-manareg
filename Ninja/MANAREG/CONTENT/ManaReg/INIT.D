@@ -23,9 +23,9 @@ func void Ninja_ManaReg_Regeneration() {
     if (!MEM_Game.timestep) { return; };
     // Only in a certain interval
     var int delayTimer; delayTimer += MEM_Timer.frameTime;
-    if (delayTimer < DEFAULT_NINJA_MANAREG_TICKRATE) { return; };
+    if (delayTimer < Ninja_ManaReg_TickRate) { return; };
 	
-    delayTimer -= DEFAULT_NINJA_MANAREG_TICKRATE;
+    delayTimer -= Ninja_ManaReg_TickRate;
     
     if (hero.attribute[ATR_MANA_MAX] >= Ninja_ManaReg_Mana_Threshold) {
         if (hero.attribute[ATR_MANA] < hero.attribute[ATR_MANA_MAX]) {
@@ -65,6 +65,7 @@ func void Ninja_ManaReg_ApplyINI() {
 	Ninja_ManaReg_Mana_Threshold = DEFAULT_NINJA_MANAREG_MANA_THRESHOLD;
 	Ninja_ManaReg_Max_Mana_Divisor = DEFAULT_NINJA_MANAREG_MAX_MANA_DIVISOR;
 	Ninja_ManaReg_Flat_Mana = DEFAULT_NINJA_MANAREG_FLAT_MANA;
+
 	Ninja_ManaReg_TickRate = DEFAULT_NINJA_MANAREG_TICKRATE;
 	
 	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": THRESHOLD FROM INI = "), ini_threshold));
