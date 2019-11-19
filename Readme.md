@@ -10,7 +10,7 @@
 1. Root Path auf "Pfad\Zu\Repository\" setzen.
 1. Unter "File(mask)(s) to search for" den Wert "*.*" hinzufügen.
 1. Build Volume drücken.
-1. Sytempack 1.7+ installieren, wenn noch nicht getan.
+1. ~~Sytempack 1.7+ installieren, wenn noch nicht getan.~~ *Nicht mehr zwangsweise benötigt*
 1. Ninja 2+ installieren, wenn noch nicht getan.
 1. Erstellte .VDF in das "Gothic2\Data"-Verzeichnis legen.
 1. 2% Manaregeneration alle 2 Sekunden, ab 50 maximalem Mana genießen :)
