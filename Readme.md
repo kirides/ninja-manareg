@@ -34,5 +34,5 @@ PER_TICK=1
 `DIVISOR`: Der Wert mithilfe dessen, die Regenerationsrate bestimmt wird. (Standard: 50)
 - Berechnung: `Regenerationsrate = (Maximales Mana + (DIVISOR / 2)) / DIVISOR` (mindestens `1`)
 
-`TICKRATE`: Häufigkeit der Regeneration in Millisekunden
+`TICKRATE`: Häufigkeit der Regeneration in Millisekunden  
 `PER_TICK`: Feste Menge Mana welche Pro Tick regeneriert wird. (Sinnvoll in G1, wo Manakosten sehr gering sind)
