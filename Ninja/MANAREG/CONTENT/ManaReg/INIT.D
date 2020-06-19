@@ -1,4 +1,4 @@
-const string NINJA_MANAREG_VERSION = "ManaReg 2.0";
+const string NINJA_MANAREG_VERSION = "ManaReg 2.0.1";
 
 const string NINJA_MANAREG_INI = "NINJA_MANAREG";
 const string NINJA_MANAREG_INI_THRESHOLD = "THRESHOLD";

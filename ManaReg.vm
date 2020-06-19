@@ -1,0 +1,21 @@
+[BEGINVDF]
+Comment=
+BaseDir=.\
+VDFName=.\ManaReg.vdf
+
+[FILES]
+; Resources (list the specific files from _work here)
+; _work\* -r
+
+; Script files
+Ninja\ManaReg\* -r
+
+[EXCLUDE]
+_work\Data\Scripts\* -r
+*.vm
+*.vdf
+*.bat
+
+[INCLUDE]
+
+[ENDVDF]
