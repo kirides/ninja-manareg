@@ -1,116 +1,127 @@
-const string NINJA_MANAREG_VERSION = "ManaReg 2.0.1";
+const string NINJA_MANAREG_VERSION = "ManaReg v3.0.0";
 
-const string NINJA_MANAREG_INI = "NINJA_MANAREG";
+const string NINJA_MANAREG_INI           = "NINJA_MANAREG";
+const string NINJA_MANAREG_INI_TICKRATE  = "TICKRATE";
 const string NINJA_MANAREG_INI_THRESHOLD = "THRESHOLD";
-const string NINJA_MANAREG_INI_DIVISOR = "DIVISOR";
-const string NINJA_MANAREG_INI_TICKRATE = "TICKRATE";
-const string NINJA_MANAREG_INI_PER_TICK = "PER_TICK";
+const string NINJA_MANAREG_INI_PERMILLE  = "PERMILLE";
+const string NINJA_MANAREG_INI_PER_TICK  = "PER_TICK";
 
-const int DEFAULT_NINJA_MANAREG_MANA_THRESHOLD = 50;
-const int DEFAULT_NINJA_MANAREG_MAX_MANA_DIVISOR = 50;
-const int DEFAULT_NINJA_MANAREG_TICKRATE = 2000;
-const int DEFAULT_NINJA_MANAREG_FLAT_MANA = 0;
+const int Ninja_ManaReg_TickRate         = 0;
+const int Ninja_ManaReg_Permille         = 0;
+const int Ninja_ManaReg_Permille_InFight = 0;
+const int Ninja_ManaReg_SumMenge         = 0;
+const int Ninja_ManaReg_PerTick          = 0;
 
-var int Ninja_ManaReg_Mana_Threshold;
-var int Ninja_ManaReg_Max_Mana_Divisor;
-var int Ninja_ManaReg_TickRate;
-var int Ninja_ManaReg_Flat_Mana;
+/// This function is based on mud-freak's work in [Autosave Patch](https://forum.worldofplayers.de/forum/threads/1560461-Patch-Autosave).
+func int Ninja_ManaReg_IsInFight() {
+    /*
+        Not in fight or during threat
+        oHERO_STATUS_STD = 0 // Default
+        oHERO_STATUS_THR = 1 // Threatened
+        oHERO_STATUS_FGT = 2 // In Fight
+     */
+    const int oCZoneMusic__s_herostatus_G1 =  9299208; //0x8DE508
+    const int oCZoneMusic__s_herostatus_G2 = 10111520; //0x9A4A20
+    if (MEM_ReadInt(MEMINT_SwitchG1G2(oCZoneMusic__s_herostatus_G1, oCZoneMusic__s_herostatus_G2))) {
+        return TRUE;
+    };
+    return FALSE;
+};
 
 func void Ninja_ManaReg_Regeneration() {
-    // Not during loading
-    if (!Hlp_IsValidNpc(hero)) { return; };
-    // Only in-game
-    if (!MEM_Game.timestep) { return; };
-    // Only in a certain interval
-    var int delayTimer; delayTimer += MEM_Timer.frameTime;
-    if (delayTimer < Ninja_ManaReg_TickRate) { return; };
-	
-    delayTimer -= Ninja_ManaReg_TickRate;
-    
-    if (hero.attribute[ATR_MANA_MAX] >= Ninja_ManaReg_Mana_Threshold) {
-        if (hero.attribute[ATR_MANA] < hero.attribute[ATR_MANA_MAX]) {
-            var int menge; menge = (hero.attribute[ATR_MANA_MAX] + (Ninja_ManaReg_Max_Mana_Divisor/2)) / Ninja_ManaReg_Max_Mana_Divisor;
-			if (menge <= 0) { menge = 1; }; /* Minimum of 1 mana */
-            Npc_ChangeAttribute(hero, ATR_MANA, menge);
-        };
-    };
+	if (hero.attribute[ATR_MANA] < hero.attribute[ATR_MANA_MAX]) {
+		var int heroManaMax; heroManaMax = mkf(hero.attribute[ATR_MANA_MAX]);
+
+		if (Ninja_ManaReg_PerTick) {
+			Npc_ChangeAttribute(hero, ATR_MANA, Ninja_ManaReg_PerTick);
+			return;
+		};
+
+		var int menge;
+		if (Ninja_ManaReg_IsInFight()) { menge = mulf(heroManaMax, Ninja_ManaReg_Permille_InFight); }
+		else                           { menge = mulf(heroManaMax, Ninja_ManaReg_Permille);         };
+
+		Ninja_ManaReg_SumMenge = addf(Ninja_ManaReg_SumMenge, menge);
+
+		menge = truncf(Ninja_ManaReg_SumMenge);
+		if (menge < 1) { return; };
+
+		Npc_ChangeAttribute(hero, ATR_MANA, menge);
+		Ninja_ManaReg_SumMenge = FLOATNULL;
+	};
 };
 
-func void Ninja_ManaReg_Regeneration_Flat() {
-    // Not during loading
-    if (!Hlp_IsValidNpc(hero)) { return; };
-    // Only in-game
-    if (!MEM_Game.timestep) { return; };
-    // Only in a certain interval
-    var int delayTimer; delayTimer += MEM_Timer.frameTime;
-    if (delayTimer < Ninja_ManaReg_TickRate) { return; };
-    
-	delayTimer -= Ninja_ManaReg_TickRate;
-
-    var c_npc n; n = Hlp_GetNpc(hero);
-    
-    if (n.attribute[ATR_MANA_MAX] >= Ninja_ManaReg_Mana_Threshold) {
-        if (n.attribute[ATR_MANA] < n.attribute[ATR_MANA_MAX]) {
-            Npc_ChangeAttribute(n, ATR_MANA, Ninja_ManaReg_Flat_Mana);
-        };
-    };
+func string Ninja_ManaReg_GothOpt(var string section, var string option, var string default) {
+	if (!MEM_GothOptExists(section, option)) {
+		MEM_SetGothOpt(section, option, default);
+		return default;
+	};
+	var string opt; opt = MEM_GetGothOpt(section, option);
+	return opt;
+};
+func string Ninja_ManaReg_SwitchStringG1G2(var string g1, var string g2) {
+	if (GOTHIC_BASE_VERSION == 2) {
+		return g2;
+	};
+	return g1;
 };
 
+/// Reads information from INI and sets some constants for use in this patch.
 func void Ninja_ManaReg_ApplyINI() {
-	var string ini_threshold; ini_threshold = MEM_GetGothOpt(NINJA_MANAREG_INI, NINJA_MANAREG_INI_THRESHOLD);
-	var string ini_divisor; ini_divisor = MEM_GetGothOpt(NINJA_MANAREG_INI, NINJA_MANAREG_INI_DIVISOR);
-	var string ini_tickrate; ini_tickrate = MEM_GetGothOpt(NINJA_MANAREG_INI, NINJA_MANAREG_INI_TICKRATE);
-	var string ini_per_tick; ini_per_tick = MEM_GetGothOpt(NINJA_MANAREG_INI, NINJA_MANAREG_INI_PER_TICK);
+	var string ini_tickrate;  ini_tickrate  = Ninja_ManaReg_GothOpt(NINJA_MANAREG_INI, NINJA_MANAREG_INI_TICKRATE, "1000");
+	var string ini_permille;  ini_permille  = Ninja_ManaReg_GothOpt(NINJA_MANAREG_INI, NINJA_MANAREG_INI_PERMILLE, "10");
+	var string ini_threshold; ini_threshold = Ninja_ManaReg_GothOpt(NINJA_MANAREG_INI, NINJA_MANAREG_INI_THRESHOLD, "50");
+	var string ini_per_tick;  ini_per_tick  = Ninja_ManaReg_GothOpt(NINJA_MANAREG_INI, NINJA_MANAREG_INI_PER_TICK, Ninja_ManaReg_SwitchStringG1G2("1", "0"));
 	
-	Ninja_ManaReg_Mana_Threshold = DEFAULT_NINJA_MANAREG_MANA_THRESHOLD;
-	Ninja_ManaReg_Max_Mana_Divisor = DEFAULT_NINJA_MANAREG_MAX_MANA_DIVISOR;
-	Ninja_ManaReg_Flat_Mana = DEFAULT_NINJA_MANAREG_FLAT_MANA;
-	Ninja_ManaReg_TickRate = DEFAULT_NINJA_MANAREG_TICKRATE;
-	
-	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": THRESHOLD FROM INI = "), ini_threshold));
-	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": DIVISOR FROM INI = "), ini_divisor));
 	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": TICKRATE FROM INI = "), ini_tickrate));
-	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": FLAT MANA FROM INI = "), ini_per_tick));
+	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": PERMILLE FROM INI = "), ini_permille));
+	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": THRESHOLD FROM INI = "), ini_threshold));
+	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": PER_TICK FROM INI = "), ini_per_tick));
 	
-	if (!Hlp_StrCmp(ini_threshold, "")) {
-		Ninja_ManaReg_Mana_Threshold = STR_ToInt(ini_threshold);
-	};
-	
-	if (!Hlp_StrCmp(ini_divisor, "")) {
-		Ninja_ManaReg_Max_Mana_Divisor = STR_ToInt(ini_divisor);
-	};
-	
-	if (!Hlp_StrCmp(ini_tickrate, "")) {
-		Ninja_ManaReg_TickRate = STR_ToInt(ini_tickrate);
-	};
-	
-	if (!Hlp_StrCmp(ini_per_tick, "")) {
-		Ninja_ManaReg_Flat_Mana = STR_ToInt(ini_per_tick);
-	};
+	Ninja_ManaReg_TickRate = STR_ToInt(ini_tickrate);
+	Ninja_ManaReg_Permille = STR_ToInt(ini_permille);
+	Ninja_ManaReg_PerTick  = STR_ToInt(ini_per_tick);
+
+
+	Ninja_ManaReg_Permille         = divf(mkf(Ninja_ManaReg_Permille), mkf(1000));
+	Ninja_ManaReg_Permille_InFight = divf(Ninja_ManaReg_Permille, mkf(2));
+	Ninja_ManaReg_SumMenge         = FLOATNULL;
 };
 
-/// Init-function called by Ninja
-func void ManaReg_Init() {
+func void Ninja_ManaReg_SetupRegeneration(var int tickRate) {
+    var int hndl;
+    if (!hndl) {
+        FF_Remove(Ninja_ManaReg_Regeneration); // Remove any previous Framefunction. (Shouldn't be there, beware the dragons)
+        FF_ApplyExtGT(Ninja_ManaReg_Regeneration, tickRate, -1);
+        hndl = nextHandle;
+		MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": " ), "FrameFunction installed"));	
+    } else {
+        var FFItem ff; ff = get(hndl);
+        ff.delay = tickRate;
+        ff.next = TimerGT() + ff.delay;
+		MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": " ), "FrameFunction updated"));	
+    };
+};
+
+/// Start/update FrameFunction 
+/// ____
+/// `on every initialization!`
+func void Ninja_ManaReg_Init_Internal() {
 	// Initialize Ikarus
 	MEM_InitAll();
+	Lego_MergeFlags(LeGo_FrameFunctions);
 
 	MEM_Info(ConcatStrings(ConcatStrings("Initialize ", NINJA_MANAREG_VERSION), "."));
 	
-	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": " ), "Applying Gothic.INI."));
-	Ninja_ManaReg_ApplyINI();
-	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": " ), "Gothic.INI applied"));
-	
-    MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": " ), "Hooking into oCGame__Render."));
-	if (Ninja_ManaReg_Flat_Mana) {
-		// Wenn eine statische Regeneration
-		HookEngineF(oCGame__Render, 7, Ninja_ManaReg_Regeneration_Flat);
-	} else {
-		// Wenn eine dynamische Regeneration
-		HookEngineF(oCGame__Render, 7, Ninja_ManaReg_Regeneration);
+	const int once = 1;
+	if (once) {
+		MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": " ), "Applying Gothic.INI."));
+		Ninja_ManaReg_ApplyINI();
+		MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": " ), "Gothic.INI applied"));	
+		once = 0;
 	};
-    MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": " ), "Hooking into oCGame__Render finished."));
+
+	Ninja_ManaReg_SetupRegeneration(Ninja_ManaReg_TickRate);
 
     MEM_Info(ConcatStrings(NINJA_MANAREG_VERSION, " was initialized successfully."));
 };
-
-func void Ninja_ManaReg_Dummy(){};

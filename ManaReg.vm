@@ -1,5 +1,5 @@
 [BEGINVDF]
-Comment=
+Comment=[v3.0.0] Passive Manaregeneration 1% / sec. Starts at 50 maximum Mana, configurable.
 BaseDir=.\
 VDFName=.\ManaReg.vdf
 

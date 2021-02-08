@@ -2,5 +2,5 @@
 func void Ninja_ManaReg_Init() {
 	// Initialize Ikarus
 	MEM_InitAll();
-	ManaReg_Init();
+	Ninja_ManaReg_Init_Internal();
 };
