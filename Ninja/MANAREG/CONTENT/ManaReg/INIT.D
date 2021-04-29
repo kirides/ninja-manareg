@@ -1,4 +1,4 @@
-const string NINJA_MANAREG_VERSION = "ManaReg v3.0.0";
+const string NINJA_MANAREG_VERSION = "ManaReg v3.0.1";
 
 const string NINJA_MANAREG_INI           = "NINJA_MANAREG";
 const string NINJA_MANAREG_INI_TICKRATE  = "TICKRATE";
@@ -11,6 +11,7 @@ const int Ninja_ManaReg_Permille         = 0;
 const int Ninja_ManaReg_Permille_InFight = 0;
 const int Ninja_ManaReg_SumMenge         = 0;
 const int Ninja_ManaReg_PerTick          = 0;
+const int Ninja_ManaReg_Threshold        = 0;
 
 /// This function is based on mud-freak's work in [Autosave Patch](https://forum.worldofplayers.de/forum/threads/1560461-Patch-Autosave).
 func int Ninja_ManaReg_IsInFight() {
@@ -29,6 +30,9 @@ func int Ninja_ManaReg_IsInFight() {
 };
 
 func void Ninja_ManaReg_Regeneration() {
+	if (hero.attribute[ATR_MANA_MAX] < Ninja_ManaReg_Threshold) {
+		return;
+	};
 	if (hero.attribute[ATR_MANA] < hero.attribute[ATR_MANA_MAX]) {
 		var int heroManaMax; heroManaMax = mkf(hero.attribute[ATR_MANA_MAX]);
 
@@ -78,9 +82,10 @@ func void Ninja_ManaReg_ApplyINI() {
 	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": THRESHOLD FROM INI = "), ini_threshold));
 	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": PER_TICK FROM INI = "), ini_per_tick));
 	
-	Ninja_ManaReg_TickRate = STR_ToInt(ini_tickrate);
-	Ninja_ManaReg_Permille = STR_ToInt(ini_permille);
-	Ninja_ManaReg_PerTick  = STR_ToInt(ini_per_tick);
+	Ninja_ManaReg_TickRate   = STR_ToInt(ini_tickrate);
+	Ninja_ManaReg_Permille   = STR_ToInt(ini_permille);
+	Ninja_ManaReg_Threshold  = STR_ToInt(ini_threshold);
+	Ninja_ManaReg_PerTick    = STR_ToInt(ini_per_tick);
 
 
 	Ninja_ManaReg_Permille         = divf(mkf(Ninja_ManaReg_Permille), mkf(1000));
