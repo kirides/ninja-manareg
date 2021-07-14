@@ -1,10 +1,11 @@
-const string NINJA_MANAREG_VERSION = "ManaReg v3.0.1";
+const string NINJA_MANAREG_VERSION = "ManaReg v3.1.0";
 
 const string NINJA_MANAREG_INI           = "NINJA_MANAREG";
 const string NINJA_MANAREG_INI_TICKRATE  = "TICKRATE";
 const string NINJA_MANAREG_INI_THRESHOLD = "THRESHOLD";
 const string NINJA_MANAREG_INI_PERMILLE  = "PERMILLE";
 const string NINJA_MANAREG_INI_PER_TICK  = "PER_TICK";
+const string NINJA_MANAREG_INI_REDUCE_IN_FIGHT  = "REDUCE_IN_FIGHT";
 
 const int Ninja_ManaReg_TickRate         = 0;
 const int Ninja_ManaReg_Permille         = 0;
@@ -12,9 +13,13 @@ const int Ninja_ManaReg_Permille_InFight = 0;
 const int Ninja_ManaReg_SumMenge         = 0;
 const int Ninja_ManaReg_PerTick          = 0;
 const int Ninja_ManaReg_Threshold        = 0;
+const int Ninja_ManaReg_ReduceInFight    = 1;
 
 /// This function is based on mud-freak's work in [Autosave Patch](https://forum.worldofplayers.de/forum/threads/1560461-Patch-Autosave).
 func int Ninja_ManaReg_IsInFight() {
+	if (!Ninja_ManaReg_ReduceInFight) {
+		return 0;
+	};
     /*
         Not in fight or during threat
         oHERO_STATUS_STD = 0 // Default
@@ -24,9 +29,9 @@ func int Ninja_ManaReg_IsInFight() {
     const int oCZoneMusic__s_herostatus_G1 =  9299208; //0x8DE508
     const int oCZoneMusic__s_herostatus_G2 = 10111520; //0x9A4A20
     if (MEM_ReadInt(MEMINT_SwitchG1G2(oCZoneMusic__s_herostatus_G1, oCZoneMusic__s_herostatus_G2))) {
-        return TRUE;
+        return 1;
     };
-    return FALSE;
+    return 0;
 };
 
 func void Ninja_ManaReg_Regeneration() {
@@ -76,16 +81,19 @@ func void Ninja_ManaReg_ApplyINI() {
 	var string ini_permille;  ini_permille  = Ninja_ManaReg_GothOpt(NINJA_MANAREG_INI, NINJA_MANAREG_INI_PERMILLE, "10");
 	var string ini_threshold; ini_threshold = Ninja_ManaReg_GothOpt(NINJA_MANAREG_INI, NINJA_MANAREG_INI_THRESHOLD, "50");
 	var string ini_per_tick;  ini_per_tick  = Ninja_ManaReg_GothOpt(NINJA_MANAREG_INI, NINJA_MANAREG_INI_PER_TICK, Ninja_ManaReg_SwitchStringG1G2("1", "0"));
+	var string ini_reduceInFight; ini_reduceInFight = Ninja_ManaReg_GothOpt(NINJA_MANAREG_INI, NINJA_MANAREG_INI_REDUCE_IN_FIGHT, "1");
 	
 	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": TICKRATE FROM INI = "), ini_tickrate));
 	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": PERMILLE FROM INI = "), ini_permille));
 	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": THRESHOLD FROM INI = "), ini_threshold));
 	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": PER_TICK FROM INI = "), ini_per_tick));
+	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": REDUCE_IN_FIGHT FROM INI = "), ini_reduceInFight));
 	
 	Ninja_ManaReg_TickRate   = STR_ToInt(ini_tickrate);
 	Ninja_ManaReg_Permille   = STR_ToInt(ini_permille);
 	Ninja_ManaReg_Threshold  = STR_ToInt(ini_threshold);
 	Ninja_ManaReg_PerTick    = STR_ToInt(ini_per_tick);
+	Ninja_ManaReg_ReduceInFight = STR_ToInt(ini_reduceInFight);
 
 
 	Ninja_ManaReg_Permille         = divf(mkf(Ninja_ManaReg_Permille), mkf(1000));
