@@ -1,4 +1,4 @@
-const string NINJA_MANAREG_VERSION = "ManaReg v3.1.0";
+const string NINJA_MANAREG_VERSION = "ManaReg v3.1.1";
 
 const string NINJA_MANAREG_INI           = "NINJA_MANAREG";
 const string NINJA_MANAREG_INI_TICKRATE  = "TICKRATE";
@@ -6,6 +6,7 @@ const string NINJA_MANAREG_INI_THRESHOLD = "THRESHOLD";
 const string NINJA_MANAREG_INI_PERMILLE  = "PERMILLE";
 const string NINJA_MANAREG_INI_PER_TICK  = "PER_TICK";
 const string NINJA_MANAREG_INI_REDUCE_IN_FIGHT  = "REDUCE_IN_FIGHT";
+const string NINJA_MANAREG_INI_IN_FIGHT_PERCENT = "IN_FIGHT_PERCENT";
 
 const int Ninja_ManaReg_TickRate         = 0;
 const int Ninja_ManaReg_Permille         = 0;
@@ -47,8 +48,12 @@ func void Ninja_ManaReg_Regeneration() {
 		};
 
 		var int menge;
-		if (Ninja_ManaReg_IsInFight()) { menge = mulf(heroManaMax, Ninja_ManaReg_Permille_InFight); }
-		else                           { menge = mulf(heroManaMax, Ninja_ManaReg_Permille);         };
+		if (Ninja_ManaReg_IsInFight()) {
+			if (!Ninja_ManaReg_Permille_InFight) { return; };
+			menge = mulf(heroManaMax, Ninja_ManaReg_Permille_InFight);
+		} else {
+			menge = mulf(heroManaMax, Ninja_ManaReg_Permille);
+		};
 
 		Ninja_ManaReg_SumMenge = addf(Ninja_ManaReg_SumMenge, menge);
 
@@ -56,7 +61,7 @@ func void Ninja_ManaReg_Regeneration() {
 		if (menge < 1) { return; };
 
 		Npc_ChangeAttribute(hero, ATR_MANA, menge);
-		Ninja_ManaReg_SumMenge = FLOATNULL;
+		Ninja_ManaReg_SumMenge = subf(Ninja_ManaReg_SumMenge, mkf(menge));
 	};
 };
 
@@ -82,12 +87,14 @@ func void Ninja_ManaReg_ApplyINI() {
 	var string ini_threshold; ini_threshold = Ninja_ManaReg_GothOpt(NINJA_MANAREG_INI, NINJA_MANAREG_INI_THRESHOLD, "50");
 	var string ini_per_tick;  ini_per_tick  = Ninja_ManaReg_GothOpt(NINJA_MANAREG_INI, NINJA_MANAREG_INI_PER_TICK, Ninja_ManaReg_SwitchStringG1G2("1", "0"));
 	var string ini_reduceInFight; ini_reduceInFight = Ninja_ManaReg_GothOpt(NINJA_MANAREG_INI, NINJA_MANAREG_INI_REDUCE_IN_FIGHT, "1");
+	var string ini_InFightPercent; ini_InFightPercent = Ninja_ManaReg_GothOpt(NINJA_MANAREG_INI, NINJA_MANAREG_INI_IN_FIGHT_PERCENT, "50");
 	
 	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": TICKRATE FROM INI = "), ini_tickrate));
 	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": PERMILLE FROM INI = "), ini_permille));
 	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": THRESHOLD FROM INI = "), ini_threshold));
 	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": PER_TICK FROM INI = "), ini_per_tick));
 	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": REDUCE_IN_FIGHT FROM INI = "), ini_reduceInFight));
+	MEM_Info(ConcatStrings(ConcatStrings(NINJA_MANAREG_VERSION, ": IN_FIGHT_PERCENT FROM INI = "), ini_InFightPercent));
 	
 	Ninja_ManaReg_TickRate   = STR_ToInt(ini_tickrate);
 	Ninja_ManaReg_Permille   = STR_ToInt(ini_permille);
@@ -95,9 +102,19 @@ func void Ninja_ManaReg_ApplyINI() {
 	Ninja_ManaReg_PerTick    = STR_ToInt(ini_per_tick);
 	Ninja_ManaReg_ReduceInFight = STR_ToInt(ini_reduceInFight);
 
-
+	Ninja_ManaReg_Permille_InFight = STR_ToInt(ini_InFightPercent);
+	if (Ninja_ManaReg_Permille_InFight > 100) {
+		Ninja_ManaReg_ReduceInFight = 0;
+		Ninja_ManaReg_Permille_InFight = 100;
+		MEM_SetGothOpt(NINJA_MANAREG_INI, NINJA_MANAREG_INI_IN_FIGHT_PERCENT, "100");
+	} else if (Ninja_ManaReg_Permille_InFight <= 0) {
+		MEM_SetGothOpt(NINJA_MANAREG_INI, NINJA_MANAREG_INI_IN_FIGHT_PERCENT, "0");
+		Ninja_ManaReg_Permille_InFight = 0;
+	};
 	Ninja_ManaReg_Permille         = divf(mkf(Ninja_ManaReg_Permille), mkf(1000));
-	Ninja_ManaReg_Permille_InFight = divf(Ninja_ManaReg_Permille, mkf(2));
+	if (Ninja_ManaReg_Permille_InFight) {
+		Ninja_ManaReg_Permille_InFight = mulf(Ninja_ManaReg_Permille, divf(mkf(Ninja_ManaReg_Permille_InFight), mkf(100)));
+	};
 	Ninja_ManaReg_SumMenge         = FLOATNULL;
 };
 
@@ -135,6 +152,6 @@ func void Ninja_ManaReg_Init_Internal() {
 	};
 
 	Ninja_ManaReg_SetupRegeneration(Ninja_ManaReg_TickRate);
-
+	Ninja_ManaReg_SumMenge = FLOATNULL;
     MEM_Info(ConcatStrings(NINJA_MANAREG_VERSION, " was initialized successfully."));
 };
