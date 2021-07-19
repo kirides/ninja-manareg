@@ -1,0 +1,56 @@
+name: Release (Linux)
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set tag and directory name env
+      run: |
+        export tagName=${GITHUB_REF/refs\/tags\//}
+        export patchName="ManaReg"
+        export buildScript="$patchName.vm"
+        export buildFile="$patchName.vdf"
+        echo "Tag: ${tagName}"
+        echo "RELEASE_VERSION=${tagName}" >> $GITHUB_ENV
+        echo "BUILD_SCRIPT=${buildScript}" >> $GITHUB_ENV
+        echo "RELEASE_FILE=${buildFile}" >> $GITHUB_ENV
+
+    - name: Package VDF
+      uses: kirides/vdfsbuilder@v0.0.4
+      with:
+        in: ${{ github.workspace }}/${{ env.BUILD_SCRIPT }}
+        out: ${{ github.workspace }}/${{ env.RELEASE_FILE }}
+        baseDir: ${{ github.workspace }}
+
+    - name: Calculate distribution hash
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: |
+        sha256sum "$RELEASE_FILE" > "$RELEASE_FILE.sha256"
+        cat "$RELEASE_FILE.sha256"
+
+    - name: Create github release
+      run: |
+        gh release create $RELEASE_VERSION -p -n "Generated release from GitHub Actions"
+        exit 0
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+    - name: Upload artifacts to github release
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: |
+        gh release upload $RELEASE_VERSION "$RELEASE_FILE"
+        gh release upload $RELEASE_VERSION "$RELEASE_FILE.sha256"
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
