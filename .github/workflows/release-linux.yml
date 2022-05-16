@@ -42,7 +42,7 @@ jobs:
 
     - name: Create github release
       run: |
-        gh release create $RELEASE_VERSION -p -n "Generated release from GitHub Actions"
+        gh release create $RELEASE_VERSION -n "Generated release from GitHub Actions"
         exit 0
       env:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
