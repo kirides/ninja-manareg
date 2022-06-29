@@ -1,4 +1,4 @@
-const string NINJA_MANAREG_VERSION = "ManaReg v3.1.1";
+const string NINJA_MANAREG_VERSION = "ManaReg v3.1.2";
 
 const string NINJA_MANAREG_INI           = "NINJA_MANAREG";
 const string NINJA_MANAREG_INI_TICKRATE  = "TICKRATE";
