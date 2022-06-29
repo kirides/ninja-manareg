@@ -1,9 +1,13 @@
-name: Release (Linux)
+name: Release
 
 on:
   push:
     tags:
       - 'v*'
+
+env:
+  BUILD_SCRIPT: ManaReg.vm
+  RELEASE_FILE: ManaReg.vdf
 
 defaults:
   run:
@@ -19,13 +23,8 @@ jobs:
     - name: Set tag and directory name env
       run: |
         export tagName=${GITHUB_REF/refs\/tags\//}
-        export patchName="ManaReg"
-        export buildScript="$patchName.vm"
-        export buildFile="$patchName.vdf"
         echo "Tag: ${tagName}"
         echo "RELEASE_VERSION=${tagName}" >> $GITHUB_ENV
-        echo "BUILD_SCRIPT=${buildScript}" >> $GITHUB_ENV
-        echo "RELEASE_FILE=${buildFile}" >> $GITHUB_ENV
 
     - name: Package VDF
       uses: kirides/vdfsbuilder@v0.0.4
