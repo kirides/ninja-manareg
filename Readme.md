@@ -1,3 +1,5 @@
+[![Release](https://github.com/kirides/ninja-manareg/actions/workflows/release-linux.yml/badge.svg)](https://github.com/kirides/ninja-manareg/actions/workflows/release-linux.yml)
+
 # Für Anwender
 
 ## Installationsanleitung
