@@ -46,8 +46,8 @@ jobs:
       with:
         name: dist
         path: |
-          $RELEASE_FILE
-          $RELEASE_FILE.sha256
+          ${{ env.RELEASE_FILE }}
+          ${{ env.RELEASE_FILE }}.sha256
 
     - name: Create github release
       run: |
