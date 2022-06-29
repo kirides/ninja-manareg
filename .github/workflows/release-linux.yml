@@ -42,7 +42,6 @@ jobs:
         cat "$RELEASE_FILE.sha256"
 
     - name: Upload artifacts
-      working-directory: ${{env.GITHUB_WORKSPACE}}
       uses: actions/upload-artifact@v3
       with:
         name: dist
