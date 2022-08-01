@@ -31,11 +31,9 @@ jobs:
       - name: Package VDF
         working-directory: ${{env.GITHUB_WORKSPACE}}
         run: |
-          curl --output ./vdfsbuilder https://github.com/kirides/vdfsbuilder/releases/download/v1.0.0/vdfsbuilder.linux-amd64
+          curl --output ./vdfsbuilder https://github.com/kirides/vdfsbuilder/releases/download/v1.0.1/vdfsbuilder.linux-amd64
           chmod +x ./vdfsbuilder
-          ./vdfsbuilder \
-            -o ./${{ env.RELEASE_FILE }} \
-            ./${{ env.BUILD_SCRIPT }}
+          ./vdfsbuilder -o ${{ env.RELEASE_FILE }} ${{ env.BUILD_SCRIPT }}
           ls -R
 
       - name: Calculate distribution hash
