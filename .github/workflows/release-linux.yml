@@ -29,11 +29,14 @@ jobs:
         echo "RELEASE_VERSION=${tagName}" >> $GITHUB_ENV
 
     - name: Package VDF
-      uses: kirides/vdfsbuilder@v0.0.4
-      with:
-        in: ${{ github.workspace }}/${{ env.BUILD_SCRIPT }}
-        out: ${{ github.workspace }}/${{ env.RELEASE_FILE }}
-        baseDir: ${{ github.workspace }}
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: |
+        curl --output vdfsbuilder https://github.com/kirides/vdfsbuilder/releases/download/v1.0.0/vdfsbuilder.linux-amd64
+        chmod +x ./vdfsbuilder
+        ./vdfsbuilder \
+          -b ${{ env.GITHUB_WORKSPACE }} \
+          -o ${{ env.RELEASE_FILE }} \
+          ${{ env.BUILD_SCRIPT }}
 
     - name: Calculate distribution hash
       working-directory: ${{env.GITHUB_WORKSPACE}}
@@ -53,7 +56,7 @@ jobs:
       run: |
         gh release create $RELEASE_VERSION -n "Generated release from GitHub Actions"
         exit 0
-      if: startsWith(github.ref, 'refs/tags/v')
+      if: startsWith(github.ref, 'refs/tags/')
       env:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
@@ -62,6 +65,6 @@ jobs:
       run: |
         gh release upload $RELEASE_VERSION "$RELEASE_FILE"
         gh release upload $RELEASE_VERSION "$RELEASE_FILE.sha256"
-      if: startsWith(github.ref, 'refs/tags/v')
+      if: startsWith(github.ref, 'refs/tags/')
       env:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
