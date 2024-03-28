@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set tag and directory name env
         run: |
@@ -29,13 +29,10 @@ jobs:
           echo "RELEASE_VERSION=${tagName}" >> $GITHUB_ENV
 
       - name: Package VDF
-        working-directory: ${{env.GITHUB_WORKSPACE}}
-        run: |
-          curl -L --output ./vdfsbuilder https://github.com/kirides/vdfsbuilder/releases/download/v1.0.1/vdfsbuilder.linux-amd64
-          chmod +x ./vdfsbuilder
-          ls -lhR
-          ./vdfsbuilder -o "${{ env.RELEASE_FILE }}" "${{ env.BUILD_SCRIPT }}"
-          ls -lhR
+        uses: kirides/vdfsbuilder@f6402aa7c633f4f657bc67e22efe2f0e3caa6802
+        with:
+          in: ${{ env.BUILD_SCRIPT }}
+          out: ${{ env.RELEASE_FILE }}
 
       - name: Calculate distribution hash
         working-directory: ${{env.GITHUB_WORKSPACE}}
@@ -44,7 +41,7 @@ jobs:
           cat "$RELEASE_FILE.sha256"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: |
