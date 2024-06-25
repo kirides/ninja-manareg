@@ -21,6 +21,8 @@ THRESHOLD=50
 PERMILLE=10
 TICKRATE=1000
 PER_TICK=1
+REDUCE_IN_FIGHT=1
+IN_FIGHT_PERCENT=50
 ```
 
 ## Erklärung
@@ -29,6 +31,8 @@ PER_TICK=1
 `PERMILLE`: Der Wert mithilfe dessen, die Regenerationsrate bestimmt wird. (Standard: 10 => 1% Pro Tick)
 `TICKRATE`: Häufigkeit der Regeneration in Millisekunden 
 `PER_TICK`: Feste Menge Mana welche Pro Tick regeneriert wird. (Sinnvoll in G1, wo Manakosten sehr gering sind)
+`REDUCE_IN_FIGHT`: Gibt an ob die regenerierte Menge während des Kämpfens reduziert werden soll.
+`IN_FIGHT_PERCENT`: Gibt an wie stark die im-Kampf Regeneration im Vergleich zur regulären regeneration sein soll. 100 = identisch, 50 = halb so stark, 10 = ein zehntel der Stärke
 
 
 # Für Entwickler
